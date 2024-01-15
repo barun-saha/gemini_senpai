@@ -30,7 +30,9 @@ class WriteFileTool(ToolInterface):
     @staticmethod
     def use(params: Dict[str, str]) -> str:
         file_name = params['file_name'].strip()
-        content = params['content'].strip().replace('\\n', '\n')
+        content = params['content'].strip()
+        # TODO: This needs to be handled more carefully
+        content = content.replace('\\n', '\n').replace('\\"', '"')
 
         try:
             with open(file_name, 'w') as out_file:
