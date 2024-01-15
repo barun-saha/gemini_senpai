@@ -5,6 +5,7 @@ from vertexai.preview.generative_models import (
     GenerativeModel,
     Tool,
 )
+from vertexai.preview.language_models import ChatSession
 
 from ai_assistant.tools.base import ToolInterface, FinalAnswerTool
 from ai_assistant.tools.code_execution import CodeExecutionTool
@@ -30,7 +31,6 @@ def get_today() -> str:
 
 class Assistant(object):
     def __init__(self, tools: List[ToolInterface], verbose: bool = True):
-        self. model = GenerativeModel('gemini-pro')
         self.tools = Tool(
             function_declarations=[
                 tool.function_declaration for tool in tools
@@ -39,6 +39,12 @@ class Assistant(object):
         self.tools_by_name: Dict[str, ToolInterface] = {
             tool.name: tool for tool in tools
         }
+        self.model = GenerativeModel(
+            'gemini-pro',
+            generation_config=MODEL_CONFIG,
+            safety_settings=SAFETY_SETTINGS,
+            tools=[self.tools]
+        )
         self.system_prompt: str = (
             f'Today is {get_today()}.'
             ' Answer the question as best as you can.'
@@ -54,8 +60,18 @@ class Assistant(object):
         self.max_steps: int = 10
         self.verbose = verbose
 
+    @staticmethod
+    def get_chat_response(chat: ChatSession, prompt: str) -> str:
+        response = chat.send_message(prompt)
+        # print(response)
+        # return response.text
+        return response
+
     def run(self, question: str):
-        prompt = f'{self.system_prompt} {question}'
+        # prompt = f'{self.system_prompt} {question}'
+        chat = self.model.start_chat()
+        Assistant.get_chat_response(chat, self.system_prompt)
+        prompt = question
 
         for idx in range(self.max_steps):
             print(f'\n>>>>> Turn {idx + 1} <<<<<')
@@ -63,12 +79,14 @@ class Assistant(object):
             if self.verbose:
                 print(f'*** The current prompt is: --->\n{prompt}<---')
 
-            response = self.model.generate_content(
-                prompt,
-                generation_config=MODEL_CONFIG,
-                safety_settings=SAFETY_SETTINGS,
-                tools=[self.tools]
-            )
+            # response = self.model.generate_content(
+            #     prompt,
+            #     generation_config=MODEL_CONFIG,
+            #     safety_settings=SAFETY_SETTINGS,
+            #     tools=[self.tools]
+            # )
+
+            response = Assistant.get_chat_response(chat, prompt)
 
             if response.candidates[0].finish_reason == 'SAFETY':
                 print(f'*** Execution stopped because of SAFETY reasons')
