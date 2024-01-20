@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Dict
 from vertexai.preview.generative_models import FunctionDeclaration, Tool
 
@@ -28,11 +29,39 @@ class WriteFileTool(ToolInterface):
     )
 
     @staticmethod
+    def fix_fstring_expressions(content):
+        """
+        Try and fix potential mismatch in quotes inside f-strings.
+        Courtesy: ChatGPT
+
+        :param content: The code.
+        :return: The code with f-strings fixed.
+        """
+
+        # Regular expression pattern to match f-string expressions
+        pattern = r"f'{.*?}'|f\"{.*?}\""
+
+        # Function to replace single quotes with double quotes in f-string expressions
+        def replacer(match):
+            s = match.group(0)
+            if s.startswith("f'"):
+                # Replace single quotes with double quotes and escape existing double quotes
+                print('Replacing 1:', 'f"' + s[2:-1].replace('"', '\\"') + '"')
+                return 'f"' + s[2:-1].replace('"', '\\"') + '"'
+            else:
+                # Replace double quotes with single quotes and escape existing single quotes
+                print('Replacing 2:', "f'" + s[2:-1].replace("'", "\\'") + "'")
+                return "f'" + s[2:-1].replace("'", "\\'") + "'"
+
+        # Replace f-string expressions in the content
+        return re.sub(pattern, replacer, content)
+
+    @staticmethod
     def use(params: Dict[str, str]) -> str:
         file_name = params['file_name'].strip()
         content = params['content'].strip()
-        # TODO: This needs to be handled more carefully
-        content = content.replace('\\n', '\n').replace('\\"', '"')
+        # Courtesy: ChatGPT
+        content = WriteFileTool.fix_fstring_expressions(content.encode().decode('unicode_escape'))
 
         try:
             with open(file_name, 'w') as out_file:
