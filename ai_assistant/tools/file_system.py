@@ -9,8 +9,8 @@ from ai_assistant.tools.base import ToolInterface
 class WriteFileTool(ToolInterface):
     name: str = 'WriteFileTool'
     description: str = (
-        'Use only when you need to create or write to a file with a given name and content.'
-        ' Returns the file creation status.'
+        'Use only when you need to create, write, or append to a file with a given name and content.'
+        ' Returns the file writing status.'
     )
     function_declaration: FunctionDeclaration = FunctionDeclaration(
         name=name,
@@ -23,6 +23,10 @@ class WriteFileTool(ToolInterface):
                 },
                 'content': {
                     'type': 'string', 'description': 'Content of the file'
+                },
+                'mode': {
+                    'type': 'string',
+                    'description': 'File writing modes: "w" for write; "a" for append'
                 }
             },
         },
@@ -60,14 +64,21 @@ class WriteFileTool(ToolInterface):
     def use(params: Dict[str, str]) -> str:
         file_name = params['file_name'].strip()
         content = params['content'].strip()
+        mode = params['mode'].strip()
         # Courtesy: ChatGPT
         content = WriteFileTool.fix_fstring_expressions(content.encode().decode('unicode_escape'))
+
+        if mode not in ('w', 'a'):
+            return (
+                f'* Error:: Failed to write to file {file_name} because an incorrect file open mode is specified: {mode}.'
+                f' The supported file opening modes are: "w" for write; "a" for append.'
+            )
 
         try:
             with open(file_name, 'w') as out_file:
                 out_file.write(content)
 
-            return f'Successfully created the file: {file_name}'
+            return f'Successfully wrote to the file: {file_name}'
         except Exception as ex:
             return f'* Error:: Failed to write to the file {file_name} because of the following error: {ex}'
 
