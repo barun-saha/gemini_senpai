@@ -13,20 +13,24 @@ Gemini Senpai is a small, experimental AI assistant prototype built using Gemini
 
 ## Usage
 
+Gemini Senpai uses Google's [Vertex AI](https://cloud.google.com/vertex-ai?hl=en) to access the Gemini Pro LLM. You need to have a [Google Cloud account and Vertex AI setup](https://cloud.google.com/vertex-ai/docs/start/cloud-environment) together with authentication. Please have a look at the ["Quick Start"](https://pypi.org/project/google-cloud-aiplatform/) section and follow the steps. The use of Gemini via AI Studio (i.e., using API keys) is not yet supported.
+
+You should verify from your terminal that Google Cloud authentication is working before proceeding further.
+
 Get the source code of Gemini Senpai from GitHub:
 
 ```bash
 git clone git@github.com:barun-saha/gemini_senpai.git
 ```
 
-Install the requirements
+Install the requirements:
 
 ```bash
 cd gemini_senpai
 pip install -r requirements.txt
 ```
 
-Add your prompt and run the assistant:
+Run the assistant:
 
 ```bash
 python run_assistant.py
