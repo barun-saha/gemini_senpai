@@ -1,5 +1,7 @@
 import datetime
 import termcolor as tc
+import toml
+
 from typing import List, Dict
 
 from vertexai.generative_models._generative_models import (
@@ -47,6 +49,8 @@ class Assistant(object):
     COLOR_DEBUG = 'yellow'
     COLOR_ERROR = 'red'
 
+    SETTINGS_FILE_NAME: str = 'settings.toml'
+
     def __init__(self, tools: List[ToolInterface], verbose: bool = True):
         print('Initializing AI Assistant...', end='')
 
@@ -58,12 +62,13 @@ class Assistant(object):
         self.tools_by_name: Dict[str, ToolInterface] = {
             tool.name: tool for tool in tools
         }
-        self.model = GenerativeModel(
-            'gemini-pro',
-            generation_config=MODEL_CONFIG,
-            safety_settings=SAFETY_SETTINGS,
-            tools=[self.tools],
-        )
+        self.max_steps: int = 15
+        self.verbose: bool = verbose
+        self.debug: bool = False
+        self.model = None
+
+        self.configure()
+
         self.system_prompt: str = (
             f'Today is {get_today()}. Answer the question as best as you can.'
             ' You have a set of tools to help generate the answer.'
@@ -75,9 +80,66 @@ class Assistant(object):
             ' However, if the action taken in any of the steps results in any error,'
             ' the subsequent steps should try to fix it before reaching the final answer.'
         )
-        self.max_steps: int = 15
-        self.verbose: bool = verbose
-        self.debug: bool = False
+
+    def configure(self):
+        """
+        Set some of the configurations of the Assistant and the Gemini Pro LLM.
+        """
+
+        try:
+            with open(Assistant.SETTINGS_FILE_NAME, 'r') as in_file:
+                data = toml.load(in_file)
+
+            if 'Assistant' in data.keys():
+                params = data['Assistant']
+
+                if 'verbose' in params:
+                    self.verbose = params['verbose']
+                if 'debug' in params:
+                    self.debug = params['debug']
+                if 'max_steps' in params:
+                    self.max_steps = params['max_steps']
+
+            model_config = MODEL_CONFIG.copy()
+
+            if 'Gemini' in data.keys():
+                params = data['Assistant']
+
+                if 'temperature' in params:
+                    model_config['temperature'] = params['temperature']
+                if 'max_output_tokens' in params:
+                    model_config['max_output_tokens'] = params['max_output_tokens']
+                if 'top_k' in params:
+                    model_config['top_k'] = params['top_k']
+                if 'top_k' in params:
+                    model_config['top_k'] = params['top_k']
+
+            self.model = GenerativeModel(
+                model_name='gemini-pro',
+                generation_config=model_config,
+                safety_settings=SAFETY_SETTINGS,
+                tools=[self.tools],
+            )
+        except FileNotFoundError as fnfe:
+            tc.cprint(
+                f'* Error: The {Assistant.SETTINGS_FILE_NAME} file ws not found. Will use the default settings.',
+                Assistant.COLOR_ERROR
+            )
+        except Exception as ex:
+            msg = (
+                f'* An exception occurred while reading the {Assistant.SETTINGS_FILE_NAME} file: {ex}.'
+                f'\nWill use the default settings.'
+            )
+            tc.cprint(msg, Assistant.COLOR_ERROR)
+        finally:
+            if self.model is None:
+                self.model = GenerativeModel(
+                    model_name='gemini-pro',
+                    generation_config=MODEL_CONFIG,
+                    safety_settings=SAFETY_SETTINGS,
+                    tools=[self.tools],
+                )
+
 
     @staticmethod
     def get_chat_response(chat_session: ChatSession, prompt: str) -> MultiCandidateTextGenerationResponse:
