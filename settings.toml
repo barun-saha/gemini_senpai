@@ -1,0 +1,9 @@
+[Assistant]
+verbose = false
+debug = false
+max_steps = 15
+
+[Gemini]
+temperature = 0
+top_p = 0.5
+max_output_tokens = 8192
