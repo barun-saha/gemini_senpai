@@ -43,4 +43,4 @@ Gemini Senpai borrows code and ideas from different places, such as:
 
 -----
 
-Gemini Senpai is an experimental prototype (read weekend project). No guarantee whatsoever is provided. Use it cautiously after carefully reading the documentation and code.
+<sub>Gemini Senpai is an experimental prototype (read weekend project). No guarantee whatsoever is provided. Use it cautiously after carefully reading the documentation and code.</sub>

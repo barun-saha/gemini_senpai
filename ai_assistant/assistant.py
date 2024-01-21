@@ -57,10 +57,8 @@ class Assistant(object):
             f' you will call the `{FinalAnswerTool.name}` and do nothing more.'
             ' However, if the action taken in any of the steps results in any error,'
             ' the subsequent steps should try to fix it before reaching the final answer.'
-            # '\n\n'
-            # 'Question:'
         )
-        self.max_steps: int = 10
+        self.max_steps: int = 15
         self.verbose = verbose
 
     @staticmethod
@@ -104,7 +102,14 @@ class Assistant(object):
             func_call = response.candidates[0].content.parts[0].function_call
             func_name = func_call.name
             func_args = func_call.args
-            # print(f'*** Function call: {func_name=}, {func_args=}')
+
+            if func_name == '' or func_name is None or func_args is None:
+                prompt = (
+                    f'Incorrect choice generated:: {func_name=}, {func_args=}.'
+                    f' Please generate a valid function choice based on the following:'
+                    f'\n{self.tools}'
+                )
+                continue
 
             params = {}
             for arg in func_args:
@@ -116,9 +121,6 @@ class Assistant(object):
             if func_name == FinalAnswerTool.name:
                 print(f'Exiting loop after {idx + 1} runs because the final answer was found!')
                 print(params['answer'])
-                break
-            elif func_name == '':
-                print('* An error occurred: an empty function name was generated! Exiting...')
                 break
 
             action_output = self.tools_by_name[func_name].use(params)
