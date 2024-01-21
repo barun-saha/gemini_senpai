@@ -1,7 +1,13 @@
 import datetime
+import termcolor as tc
 from typing import List, Dict
 
-from vertexai.generative_models._generative_models import HarmBlockThreshold, HarmCategory, Content, Part
+from vertexai.generative_models._generative_models import (
+    HarmBlockThreshold,
+    HarmCategory,
+    Content,
+    Part
+)
 from vertexai.language_models._language_models import MultiCandidateTextGenerationResponse
 from vertexai.preview.generative_models import (
     GenerativeModel,
@@ -10,8 +16,7 @@ from vertexai.preview.generative_models import (
 from vertexai.preview.language_models import ChatSession
 
 from ai_assistant.tools.base import ToolInterface, FinalAnswerTool
-from ai_assistant.tools.code_execution import CodeExecutionTool
-from ai_assistant.tools.file_system import WriteFileTool, MakeDirectoryTool
+
 
 SAFETY_SETTINGS = {
     HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
@@ -27,12 +32,24 @@ MODEL_CONFIG = {
 
 
 def get_today() -> str:
+    """
+    Get today's date in `Month Day, Year` format.
+
+    :return: The date.
+    """
+
     today = datetime.date.today()
     return today.strftime('%B %d, %Y')
 
 
 class Assistant(object):
+    COLOR_TEXT = 'green'
+    COLOR_DEBUG = 'yellow'
+    COLOR_ERROR = 'red'
+
     def __init__(self, tools: List[ToolInterface], verbose: bool = True):
+        print('Initializing AI Assistant...', end='')
+
         self.tools = Tool(
             function_declarations=[
                 tool.function_declaration for tool in tools
@@ -59,7 +76,8 @@ class Assistant(object):
             ' the subsequent steps should try to fix it before reaching the final answer.'
         )
         self.max_steps: int = 15
-        self.verbose = verbose
+        self.verbose: bool = verbose
+        self.debug: bool = False
 
     @staticmethod
     def get_chat_response(chat_session: ChatSession, prompt: str) -> MultiCandidateTextGenerationResponse:
@@ -67,7 +85,8 @@ class Assistant(object):
         return response
 
     def run(self, question: str):
-        # prompt = f'{self.system_prompt} {question}'
+        print(f'running now for max {self.max_steps} steps')
+
         # Since Gemini does not allow system prompt/context, mimic to have one
         history = [
             Content(role='user', parts=[Part.from_text(self.system_prompt)]),
@@ -80,11 +99,13 @@ class Assistant(object):
         prompt = question
 
         for idx in range(self.max_steps):
-            print(f'\n>>>>> Turn {idx + 1} <<<<<')
+            msg = f'\n\n>>>>> Step {idx + 1} <<<<<'
+            tc.cprint(msg, Assistant.COLOR_TEXT)
 
-            if self.verbose:
-                print(f'>> The chat history so far:\n{chat.history}')
-                print(f'?? The prompt: {prompt}')
+            if self.debug:
+                tc.cprint(f'>> The chat history so far:\n{chat.history}', Assistant.COLOR_DEBUG)
+
+            print(f'{prompt}')
 
             # try:
             response = Assistant.get_chat_response(chat, prompt)
@@ -93,11 +114,9 @@ class Assistant(object):
             # vertexai.generative_models._generative_models.ResponseBlockedError: The response was blocked.
 
             if response.candidates[0].finish_reason == 'SAFETY':
-                print(f'*** Execution stopped because of SAFETY reasons')
+                msg = f'*** Execution stopped because of SAFETY reasons'
+                tc.cprint(msg, Assistant.COLOR_ERROR)
                 break
-
-            # print(response.candidates[0].content.parts[0])
-            print('-' * 20)
 
             func_call = response.candidates[0].content.parts[0].function_call
             func_name = func_call.name
@@ -116,16 +135,19 @@ class Assistant(object):
                 params[arg] = func_args[arg]
 
             if self.verbose:
-                print(f'*** Function call: {func_name=}, {params=}')
+                tc.cprint(f'*** Function call: {func_name=}, {params=}', Assistant.COLOR_TEXT)
 
             if func_name == FinalAnswerTool.name:
-                print(f'Exiting loop after {idx + 1} runs because the final answer was found!')
-                print(params['answer'])
+                msg = (
+                    f'\nExiting the loop after {idx + 1} runs because the final answer was found:'
+                    f'\n\n{params["answer"]}'
+                )
+                tc.cprint(msg, Assistant.COLOR_TEXT)
                 break
 
             action_output = self.tools_by_name[func_name].use(params)
 
             if self.verbose:
-                print(f'*** Output of the function call: {action_output}')
+                tc.cprint(f'*** Output of the function call: {action_output}', Assistant.COLOR_TEXT)
 
-            prompt = f'\nPreviously used tool: {func_name}\nOutput of the previous action: {action_output}'
+            prompt = f'Previously used tool: {func_name}\nOutput of the previous action: {action_output}'

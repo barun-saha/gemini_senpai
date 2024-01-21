@@ -1,6 +1,7 @@
 google-cloud-aiplatform
+termcolor
+
 
 # requests
-# termcolor
 # beautifulsoup4
 # duckduckgo-search

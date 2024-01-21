@@ -68,7 +68,8 @@ def main():
     )
 
     assistant = Assistant(
-        tools=[CodeExecutionTool, WriteFileTool, FinalAnswerTool, MakeDirectoryTool, ]
+        tools=[CodeExecutionTool, WriteFileTool, FinalAnswerTool, MakeDirectoryTool, ],
+        verbose=True
     )
     assistant.run(prompt.strip())
 
