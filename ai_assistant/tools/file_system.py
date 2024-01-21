@@ -1,7 +1,7 @@
 import os
 import re
 from typing import Dict
-from vertexai.preview.generative_models import FunctionDeclaration, Tool
+from vertexai.preview.generative_models import FunctionDeclaration
 
 from ai_assistant.tools.base import ToolInterface
 
@@ -67,7 +67,7 @@ class WriteFileTool(ToolInterface):
             with open(file_name, 'w') as out_file:
                 out_file.write(content)
 
-            return f'Successfully created the file {file_name} using {WriteFileTool.name}'
+            return f'Successfully created the file: {file_name}'
         except Exception as ex:
             return f'* Error:: Failed to write to the file {file_name} because of the following error: {ex}'
 
@@ -124,7 +124,7 @@ class MakeDirectoryTool(ToolInterface):
 
         try:
             os.mkdir(dir_name)
-            return f'Successfully created the directory {dir_name} using {MakeDirectoryTool.name}'
+            return f'Successfully created the directory: {dir_name}'
         except Exception as ex:
             return f'* Error:: Failed to write to the file {dir_name} because of the following error: {ex}'
 
