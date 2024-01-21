@@ -19,6 +19,13 @@ Get the source code of Gemini Senpai from GitHub:
 git clone git@github.com:barun-saha/gemini_senpai.git
 ```
 
+Install the requirements
+
+```bash
+cd gemini_senpai
+pip install -r requirements.txt
+```
+
 Add your prompt and run the assistant:
 
 ```bash
