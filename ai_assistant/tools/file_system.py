@@ -139,3 +139,35 @@ class MakeDirectoryTool(ToolInterface):
         except Exception as ex:
             return f'* Error:: Failed to write to the file {dir_name} because of the following error: {ex}'
 
+
+class ListDirectoryTool(ToolInterface):
+    name: str = 'ListDirectoryTool'
+    description: str = (
+        'Use only when you need to list the contents of a directory.'
+        ' Returns the names of files and subdirectories, each separated by a newline.'
+    )
+    function_declaration: FunctionDeclaration = FunctionDeclaration(
+        name=name,
+        description=description,
+        parameters={
+            'type': 'object',
+            'properties': {
+                'dir_name': {
+                    'type': 'string', 'description': 'Name of the directory (must not contain any space)'
+                },
+            },
+        },
+    )
+
+    @staticmethod
+    def use(params: Dict[str, str]) -> str:
+        dir_name = params['dir_name'].strip()
+
+        try:
+            items = os.listdir(dir_name)
+            return '\n'.join(items)
+        except NotADirectoryError as nde:
+            return f'* Error:: {dir_name} is not a directory. Use this tool only with a directory: {nde}'
+        except Exception as ex:
+            return f'* Error:: Failed to fetch the contents of dir {dir_name} because of the following error: {ex}'
+
