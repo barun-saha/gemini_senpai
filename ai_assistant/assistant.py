@@ -103,7 +103,7 @@ class Assistant(object):
             model_config = MODEL_CONFIG.copy()
 
             if 'Gemini' in data.keys():
-                params = data['Assistant']
+                params = data['Gemini']
 
                 if 'temperature' in params:
                     model_config['temperature'] = params['temperature']
@@ -111,8 +111,8 @@ class Assistant(object):
                     model_config['max_output_tokens'] = params['max_output_tokens']
                 if 'top_k' in params:
                     model_config['top_k'] = params['top_k']
-                if 'top_k' in params:
-                    model_config['top_k'] = params['top_k']
+                if 'top_p' in params:
+                    model_config['top_p'] = params['top_p']
 
             self.model = GenerativeModel(
                 model_name='gemini-pro',
