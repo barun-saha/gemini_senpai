@@ -1,0 +1,4 @@
+The `inputs.txt` file containing a list of natural numbers, one in each line. Create a Python project to read each such number and determine whether or not it is a prime number.
+The output should be `Prime` or `Not prime`, written in a separate file. Create a separate module that checks whether or not the numbers belong to Fibonacci sequence.
+For this, the output should be `Fibonacci` or `Not Fibonacci`, written in another file. All functions and modules should have appropriate docstrings.
+Also, add a README.md file for the project. Finally, execute the code and verify that everything is working fine.

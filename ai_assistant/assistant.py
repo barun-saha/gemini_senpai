@@ -1,9 +1,9 @@
 import datetime
+import sys
 import termcolor as tc
 import toml
 
 from typing import List, Dict
-
 from vertexai.generative_models._generative_models import (
     HarmBlockThreshold,
     HarmCategory,
@@ -66,6 +66,7 @@ class Assistant(object):
         self.verbose: bool = verbose
         self.debug: bool = False
         self.model = None
+        self.prompt = None
 
         self.configure()
 
@@ -100,6 +101,25 @@ class Assistant(object):
                 if 'max_steps' in params:
                     self.max_steps = params['max_steps']
 
+                if 'prompt_file' in params:
+                    try:
+                        with open(params['prompt_file'], 'r') as prompt_file:
+                            self.prompt = prompt_file.read().strip()
+                    except FileNotFoundError:
+                        tc.cprint(
+                            f'\n* Error: The prompt file was not found: {params["prompt_file"]}'
+                            f'\nExiting...',
+                            Assistant.COLOR_ERROR
+                        )
+                        sys.exit(1)
+                    except IOError as ioe:
+                        tc.cprint(
+                            f'\n* Error: I/O error occurred while reading the prompt file was not found: {ioe}'
+                            f'\nExiting...',
+                            Assistant.COLOR_ERROR
+                        )
+                        sys.exit(1)
+
             model_config = MODEL_CONFIG.copy()
 
             if 'Gemini' in data.keys():
@@ -122,12 +142,12 @@ class Assistant(object):
             )
         except FileNotFoundError as fnfe:
             tc.cprint(
-                f'* Error: The {Assistant.SETTINGS_FILE_NAME} file ws not found. Will use the default settings.',
+                f'\n* Error: The {Assistant.SETTINGS_FILE_NAME} file ws not found. Will use the default settings.',
                 Assistant.COLOR_ERROR
             )
         except Exception as ex:
             msg = (
-                f'* An exception occurred while reading the {Assistant.SETTINGS_FILE_NAME} file: {ex}.'
+                f'\n* An exception occurred while reading the {Assistant.SETTINGS_FILE_NAME} file: {ex}.'
                 f'\nWill use the default settings.'
             )
             tc.cprint(msg, Assistant.COLOR_ERROR)
@@ -146,7 +166,20 @@ class Assistant(object):
         response = chat_session.send_message(prompt)
         return response
 
-    def run(self, question: str):
+    def run(self):
+        """
+        Execute the assistant to solve a specified problem.
+        """
+
+        if not self.prompt:
+            tc.cprint(
+                '\n* Error: The prompt is not set! '
+                'Please specify a correct, non-empty prompt file in the settings.'
+                '\nExiting...',
+                Assistant.COLOR_ERROR
+            )
+            sys.exit(1)
+
         print(f'running now for max {self.max_steps} steps')
 
         # Since Gemini does not allow system prompt/context, mimic to have one
@@ -157,8 +190,8 @@ class Assistant(object):
             ]),
         ]
         chat = self.model.start_chat(history=history)
-        Assistant.get_chat_response(chat, question)
-        prompt = question
+        Assistant.get_chat_response(chat, self.prompt)
+        prompt = self.prompt
 
         for idx in range(self.max_steps):
             msg = f'\n\n>>>>> Step {idx + 1} <<<<<'

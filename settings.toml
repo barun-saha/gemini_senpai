@@ -2,6 +2,7 @@
 verbose = false
 debug = false
 max_steps = 15
+prompt_file = "prompts/prompt_01_simple.txt"
 
 [Gemini]
 temperature = 0

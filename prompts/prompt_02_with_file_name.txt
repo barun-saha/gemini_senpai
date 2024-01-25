@@ -1,0 +1,2 @@
+Write a Python program to print the current date and time.
+Save it in a file called test_demo.py. Execute the code and display the results.

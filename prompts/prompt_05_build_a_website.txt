@@ -1,0 +1,19 @@
+Background:
+John M. Doe is a scientist with Alien Institute of Artificial Intelligence.
+He has five years of experience in the areas of NLP and computer vision.
+He has worked with several AI frameworks. John has published several research papers.
+John is also an avid photographer. He has captured several images of UFOs around the world.
+He was also a winner in the Best Annual Alien Silhouette Photography Competition.
+
+Tasks:
+Create a personal website for John. The website should use Bootstrap 5 as the CSS framework.
+Create a separate page for each of the following topics: about, research, and hobbies.
+Generate and add relevant content for each page based on the background provided.
+For example, create an impressive 300-words biography of John. Create some research projects.
+There should be a navigation bar at the top of each page,
+ensuring that all the pages are linked correctly from every other page.
+The color theme should be primarily white with a dash of violet.
+The footer should contain a copyright notice and social media links.
+All the files should be created inside a directory called `personal_website`.
+When including CSS scripts from CDNs, do not add the integrity check.
+Make sure that all code are correct and content properly formatted. There should be no broken links.

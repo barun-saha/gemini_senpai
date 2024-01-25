@@ -1,0 +1,4 @@
+Write a Python program to print the current date and time.
+Based on the day of the month, print all the natural numbers up to it.
+Save the code in a file called test_demo.py. Execute the code and display the results.
+All source code and other files should be created inside the `test_demo` directory.
