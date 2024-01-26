@@ -1,8 +1,9 @@
 [Assistant]
 verbose = false
-debug = false
+debug = true
 max_steps = 15
-prompt_file = "prompts/prompt_01_simple.txt"
+prompt_file = "prompts/prompt_07_pandas.txt"
+prompt_comment_symbol = "#>#"
 
 [Gemini]
 temperature = 0

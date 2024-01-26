@@ -2,6 +2,7 @@ import datetime
 import sys
 import termcolor as tc
 import toml
+import vertexai
 
 from typing import List, Dict
 from vertexai.generative_models._generative_models import (
@@ -67,6 +68,7 @@ class Assistant(object):
         self.debug: bool = False
         self.model = None
         self.prompt = None
+        self.prompt_comment_symbol = '#>#'
 
         self.configure()
 
@@ -100,11 +102,20 @@ class Assistant(object):
                     self.debug = params['debug']
                 if 'max_steps' in params:
                     self.max_steps = params['max_steps']
+                if 'prompt_comment_symbol' in params:
+                    self.prompt_comment_symbol = params['prompt_comment_symbol']
 
                 if 'prompt_file' in params:
                     try:
                         with open(params['prompt_file'], 'r') as prompt_file:
-                            self.prompt = prompt_file.read().strip()
+                            lines = []
+
+                            for line in prompt_file.readlines():
+                                line = line.strip()
+                                if not line.startswith(self.prompt_comment_symbol):
+                                    lines.append(line)
+
+                            self.prompt = '\n'.join(lines)
                     except FileNotFoundError:
                         tc.cprint(
                             f'\n* Error: The prompt file was not found: {params["prompt_file"]}'
@@ -140,6 +151,9 @@ class Assistant(object):
                 safety_settings=SAFETY_SETTINGS,
                 tools=[self.tools],
             )
+
+            if self.debug:
+                tc.cprint(f'Using tools:\n{self.tools}', Assistant.COLOR_DEBUG)
         except FileNotFoundError as fnfe:
             tc.cprint(
                 f'\n* Error: The {Assistant.SETTINGS_FILE_NAME} file ws not found. Will use the default settings.',
@@ -189,6 +203,10 @@ class Assistant(object):
                 Part.from_text('Okay. I will follow the instructions and help you achieve the goal.')
             ]),
         ]
+
+        if self.debug:
+            tc.cprint(f'Setting chat history to:\n{history}', Assistant.COLOR_DEBUG)
+
         chat = self.model.start_chat(history=history)
         Assistant.get_chat_response(chat, self.prompt)
         prompt = self.prompt
@@ -202,11 +220,17 @@ class Assistant(object):
 
             print(f'{prompt}')
 
-            # try:
-            response = Assistant.get_chat_response(chat, prompt)
-            # except google.api_core.exceptions.Unknown as ux:
-            #     print(f'*** An unknown exception occurred: {ux}')
-            # vertexai.generative_models._generative_models.ResponseBlockedError: The response was blocked.
+            try:
+                response = Assistant.get_chat_response(chat, prompt)
+            except vertexai.generative_models._generative_models.ResponseBlockedError as rbe:
+                tc.cprint(
+                    f'*** Error while generating a response using Gemini: {rbe}',
+                    Assistant.COLOR_ERROR
+                )
+                tc.cprint('Exiting...please try running again later', Assistant.COLOR_ERROR)
+                sys.exit(1)
+                # prompt = f'\nOutput based on the previous action: {rbe}'
+                # continue
 
             if response.candidates[0].finish_reason == 'SAFETY':
                 msg = f'*** Execution stopped because of SAFETY reasons'

@@ -1,0 +1,2 @@
+Write a JS program to calculate the average of n floating point numbers, where the value of n is taken as an input.
+Save it in test.js file.

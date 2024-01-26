@@ -1,0 +1,14 @@
+#># Prompt comments: For this prompt, the assistant may need to be run a few times to get the correct result.
+
+Create a file named `students_subjects_marks.csv` and add sample data to it.
+There are only three subjects: English, Science, and Maths. Sample data format is as follows:
+Name,Subject,Marks
+John,English,50
+Jane,Science,65
+John,Maths,72
+Alice,Maths,87
+
+Next, write a Python program that uses pandas to read the CSV file.
+Based on the data, compute and display the average marks of each student.
+Also, display the average marks of the students for each subject.
+Save all files in the `class_test` dir.
