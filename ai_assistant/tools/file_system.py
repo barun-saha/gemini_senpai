@@ -1,6 +1,10 @@
+import io
 import os
 import re
+
+from pylint.lint import Run
 from typing import Dict
+from pylint.reporters.text import TextReporter
 from vertexai.preview.generative_models import FunctionDeclaration
 
 from ai_assistant.tools.base import ToolInterface
@@ -10,7 +14,7 @@ class WriteFileTool(ToolInterface):
     name: str = 'WriteFileTool'
     description: str = (
         'Use only when you need to create, write, or append to a file with a given name and content.'
-        ' Returns the file writing status.'
+        ' Returns the file writing status. In case of .py files, it also returns the result of Pylint scan.'
     )
     function_declaration: FunctionDeclaration = FunctionDeclaration(
         name=name,
@@ -24,9 +28,9 @@ class WriteFileTool(ToolInterface):
                 'content': {
                     'type': 'string', 'description': 'Content of the file'
                 },
-                'mode': {
+                'file_write_mode': {
                     'type': 'string',
-                    'description': 'File writing modes: "w" for write; "a" for append'
+                    'description': 'File writing modes: `w` for write; `a` for append'
                 }
             },
         },
@@ -62,11 +66,31 @@ class WriteFileTool(ToolInterface):
 
     @staticmethod
     def use(params: Dict[str, str]) -> str:
+        if 'file_name' not in params:
+            return (
+                '* Error: The `file_name` key is missing!'
+                ' Please use the function based on the description provided.'
+            )
+        if 'content' not in params:
+            return (
+                '* Error: The `content` key is missing!'
+                ' Please use the function based on the description provided.'
+            )
+        if 'file_write_mode' not in params:
+            return (
+                '* Error: The `file_write_mode` key is missing!'
+                ' Please use the function based on the description provided.'
+            )
+
         file_name = params['file_name'].strip()
         content = params['content'].strip()
-        mode = params['mode'].strip()
+        mode = params['file_write_mode'].strip()
         # Courtesy: ChatGPT
-        content = WriteFileTool.fix_fstring_expressions(content.encode().decode('unicode_escape'))
+        file_extension = file_name.split('.')[-1]
+        content = content.encode().decode('unicode_escape')
+
+        if file_extension and file_extension == 'py':
+            content = WriteFileTool.fix_fstring_expressions(content)
 
         if mode not in ('w', 'a'):
             return (
@@ -75,10 +99,28 @@ class WriteFileTool(ToolInterface):
             )
 
         try:
-            with open(file_name, 'w') as out_file:
+            with open(file_name, 'w', encoding='utf-8') as out_file:
                 out_file.write(content)
 
-            return f'Successfully wrote to the file: {file_name}'
+            msg = f'Successfully wrote to the file: {file_name}'
+
+            # Perform a static analysis of Python code to catch early errors
+            # often arising due to wrong formatting or encoding
+            if file_extension and file_extension == 'py':
+                pylint_output = io.StringIO()  # Custom open stream
+                reporter = TextReporter(pylint_output)
+                Run(['--errors-only', file_name], reporter=reporter, exit=False)
+                result = pylint_output.getvalue()
+                msg = '\n'.join([
+                    msg,
+                    f'Pylint static analysis result for {file_name} --'
+                    f' please regenerate the code if there is any error:',
+                    result
+                ])
+
+                print(f'Pylint result for {file_name}: {result}')
+
+            return msg
         except Exception as ex:
             return f'* Error:: Failed to write to the file {file_name} because of the following error: {ex}'
 
