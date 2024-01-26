@@ -1,8 +1,10 @@
 google-cloud-aiplatform
-termcolor
-toml
+termcolor~=2.4.0
+toml~=0.10.2
+pylint~=3.0.3
+requests~=2.31.0
 
 
-# requests
 # beautifulsoup4
 # duckduckgo-search
+
