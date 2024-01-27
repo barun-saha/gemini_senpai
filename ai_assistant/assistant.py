@@ -45,7 +45,7 @@ def get_today() -> str:
     return today.strftime('%B %d, %Y')
 
 
-class Assistant(object):
+class Assistant:
     COLOR_TEXT = 'green'
     COLOR_DEBUG = 'yellow'
     COLOR_ERROR = 'red'
@@ -73,12 +73,15 @@ class Assistant(object):
         self.configure()
 
         self.system_prompt: str = (
-            f'Today is {get_today()}. Answer the question as best as you can.'
-            ' You have a set of tools to help generate the answer.'
+            f'Today is {get_today()}. You are an AI assistant.'
+            ' Answer users questions or help attain the specified objectives as best as you can.'
+            ' You have a set of tools to help generate the solution.'
             ' When required, you can use one or more of those tools.'
-            ' Plan and solve the problem step-by-step. Look at the previous output and decide what to do next.'
-            ' Accordingly, plan what tool to use if any.'
-            ' When all the prior steps are successful and you have the final answer for the question available,'
+            ' Plan and solve the problem step-by-step.'
+            ' Look at the previous steps, their output, and decide what to do next.'
+            f' Accordingly, plan what tool to use from the following: {", ".join(self.tools_by_name.keys())}.'
+            ' When all the prior steps are successfully completed'
+            ' and you have the final answer for the question available,'
             f' you will call the `{FinalAnswerTool.name}` and do nothing more.'
             ' However, if the action taken in any of the steps results in any error,'
             ' the subsequent steps should try to fix it before reaching the final answer.'
@@ -90,7 +93,7 @@ class Assistant(object):
         """
 
         try:
-            with open(Assistant.SETTINGS_FILE_NAME, 'r') as in_file:
+            with open(Assistant.SETTINGS_FILE_NAME, 'r', encoding='utf-8') as in_file:
                 data = toml.load(in_file)
 
             if 'Assistant' in data.keys():
@@ -107,7 +110,7 @@ class Assistant(object):
 
                 if 'prompt_file' in params:
                     try:
-                        with open(params['prompt_file'], 'r') as prompt_file:
+                        with open(params['prompt_file'], 'r', encoding='utf-8') as prompt_file:
                             lines = []
 
                             for line in prompt_file.readlines():
@@ -154,7 +157,7 @@ class Assistant(object):
 
             if self.debug:
                 tc.cprint(f'Using tools:\n{self.tools}', Assistant.COLOR_DEBUG)
-        except FileNotFoundError as fnfe:
+        except FileNotFoundError:
             tc.cprint(
                 f'\n* Error: The {Assistant.SETTINGS_FILE_NAME} file ws not found. Will use the default settings.',
                 Assistant.COLOR_ERROR
@@ -177,6 +180,14 @@ class Assistant(object):
 
     @staticmethod
     def get_chat_response(chat_session: ChatSession, prompt: str) -> MultiCandidateTextGenerationResponse:
+        """
+        Get chat response from Gemini.
+
+        :param chat_session: The ongoing chat session.
+        :param prompt: The user prompt.
+        :return: The response object.
+        """
+
         response = chat_session.send_message(prompt)
         return response
 
@@ -215,8 +226,8 @@ class Assistant(object):
             msg = f'\n\n>>>>> Step {idx + 1} <<<<<'
             tc.cprint(msg, Assistant.COLOR_TEXT)
 
-            if self.debug:
-                tc.cprint(f'>> The chat history so far:\n{chat.history}', Assistant.COLOR_DEBUG)
+            # if self.debug:
+            #     tc.cprint(f'>> The chat history so far:\n{chat.history}', Assistant.COLOR_DEBUG)
 
             print(f'{prompt}')
 
@@ -233,7 +244,7 @@ class Assistant(object):
                 # continue
 
             if response.candidates[0].finish_reason == 'SAFETY':
-                msg = f'*** Execution stopped because of SAFETY reasons'
+                msg = '*** Execution stopped because of SAFETY reasons'
                 tc.cprint(msg, Assistant.COLOR_ERROR)
                 break
 
@@ -249,9 +260,7 @@ class Assistant(object):
                 )
                 continue
 
-            params = {}
-            for arg in func_args:
-                params[arg] = func_args[arg]
+            params = dict(func_args)
 
             if self.verbose:
                 tc.cprint(f'*** Function call: {func_name=}, {params=}', Assistant.COLOR_TEXT)
