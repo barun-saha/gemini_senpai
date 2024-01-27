@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 from typing import Dict
 
 from vertexai.preview.generative_models import FunctionDeclaration
@@ -43,7 +44,7 @@ class CodeExecutionTool(ToolInterface):
 
         try:
             response = subprocess.run(
-                ['python', file_name],
+                [sys.executable, file_name],
                 shell=False,
                 capture_output=True,
                 text=True,
@@ -52,7 +53,8 @@ class CodeExecutionTool(ToolInterface):
 
             if response.returncode != 0:
                 return response.stderr
-            else:
-                return response.stdout
+
+            return response.stdout
+
         except Exception as ex:
             return f'* Error:: Failed to run the program with file {file_name} because of the following error: {ex}'
