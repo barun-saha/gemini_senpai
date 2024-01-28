@@ -57,10 +57,10 @@ class WriteFileTool(ToolInterface):
                 # Replace single quotes with double quotes and escape existing double quotes
                 print('Replacing 1:', 'f"' + s[2:-1].replace('"', '\\"') + '"')
                 return 'f"' + s[2:-1].replace('"', '\\"') + '"'
-            else:
-                # Replace double quotes with single quotes and escape existing single quotes
-                print('Replacing 2:', "f'" + s[2:-1].replace("'", "\\'") + "'")
-                return "f'" + s[2:-1].replace("'", "\\'") + "'"
+            # Else
+            # Replace double quotes with single quotes and escape existing single quotes
+            print('Replacing 2:', "f'" + s[2:-1].replace("'", "\\'") + "'")
+            return "f'" + s[2:-1].replace("'", "\\'") + "'"
 
         # Replace f-string expressions in the content
         return re.sub(pattern, replacer, content)
@@ -91,6 +91,41 @@ class WriteFileTool(ToolInterface):
             old_text = text
 
         return text
+
+    @staticmethod
+    def run_code_lint(file_name: str) -> str:
+        """
+        Run Pylint on a .py file.
+
+        :param file_name: The source file name.
+        :return: The result of Pylint scan.
+        """
+
+        pylint_output = io.StringIO()
+        reporter = TextReporter(pylint_output)
+        Run(['--errors-only', file_name], reporter=reporter, exit=False)
+        result = pylint_output.getvalue()
+        return result
+
+    @staticmethod
+    def fix_unterminated_string_literal(file_name: str, line_number: int, col_number: int):
+        """
+        Try to fix the unterminated string literal error from Pylint
+        by replacing a newline with the \\n escape sequence.
+
+        :param file_name: The file to fix.
+        :param line_number: The line number in error.
+        :param col_number: The character position in the line.
+        """
+
+        with open(file_name, 'r+', encoding='utf-8') as in_file:
+            lines = in_file.readlines()
+            lines[line_number - 1] = (
+                    lines[line_number - 1][:col_number] + '\\n' + lines[line_number - 1][col_number + 1:]
+            )
+            in_file.seek(0)
+            in_file.writelines(lines)
+            in_file.truncate()
 
     @staticmethod
     def use(params: Dict[str, str]) -> str:
@@ -147,15 +182,31 @@ class WriteFileTool(ToolInterface):
             # Perform a static analysis of Python code to catch early errors
             # often arising due to wrong formatting or encoding
             if file_extension and file_extension == 'py':
-                pylint_output = io.StringIO()  # Custom open stream
-                reporter = TextReporter(pylint_output)
-                Run(['--errors-only', file_name], reporter=reporter, exit=False)
-                result = pylint_output.getvalue()
+                # Run in a loop and try to fix all potential errors because of string split into two lines
+                while True:
+                    result = WriteFileTool.run_code_lint(file_name).strip()
+
+                    print(f'Pylint: {result=}')
+
+                    if result:
+                        # Try to fix the unterminated string literal errors
+                        pattern = r"(\d+):(\d+): E0001: Parsing failed: 'unterminated string literal"
+                        match = re.search(pattern, result, re.UNICODE | re.DOTALL)
+
+                        if match:
+                            # Extract the line number and column number from the match
+                            line_number = int(match.group(1))
+                            column_number = int(match.group(2))
+                            WriteFileTool.fix_unterminated_string_literal(file_name, line_number, column_number)
+                        else:  # Do not try to fix any other kind of error
+                            break
+                    else:  # Empty result -- no error
+                        break
+
+                with open(file_name, 'r', encoding='utf-8') as in_file:
+                    code = in_file.read().strip()
 
                 if result:
-                    with open(file_name, 'r', encoding='utf-8') as in_file:
-                        code = in_file.read().strip()
-
                     msg = '\n'.join([
                         msg,
                         f'Pylint throws the following error for {file_name}:\n',
@@ -222,8 +273,11 @@ class MakeDirectoryTool(ToolInterface):
         dir_name = params['dir_name'].strip()
 
         try:
-            os.mkdir(dir_name)
-            return f'Successfully created the directory: {dir_name}'
+            if not os.path.exists(dir_name):
+                os.mkdir(dir_name)
+                return f'Successfully created the directory: {dir_name}'
+
+            return f'Directory {dir_name} already exists: this action is complete'
         except Exception as ex:
             return f'* Error:: Failed to write to the file {dir_name} because of the following error: {ex}'
 
