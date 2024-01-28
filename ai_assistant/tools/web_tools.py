@@ -1,9 +1,11 @@
+import os
 from typing import Dict
 
 import requests
 from vertexai.preview.generative_models import FunctionDeclaration
 
 from ai_assistant.tools.base import ToolInterface
+from ai_assistant.tools.file_system import MakeDirectoryTool
 
 
 class DownloadFileTool(ToolInterface):
@@ -34,6 +36,10 @@ class DownloadFileTool(ToolInterface):
         file_name = params['file_name'].strip()
 
         try:
+            dir_name = os.path.dirname(file_name)
+            if dir_name:
+                MakeDirectoryTool.use({'dir_name': dir_name})
+
             response = requests.get(url, timeout=15)
             # Check if the request was successful
             if response.status_code == 200:

@@ -174,6 +174,10 @@ class WriteFileTool(ToolInterface):
             )
 
         try:
+            dir_name = os.path.dirname(file_name)
+            if dir_name:
+                MakeDirectoryTool.use({'dir_name': dir_name})
+
             with open(file_name, mode, encoding='utf-8') as out_file:
                 out_file.write(content)
 
@@ -185,8 +189,6 @@ class WriteFileTool(ToolInterface):
                 # Run in a loop and try to fix all potential errors because of string split into two lines
                 while True:
                     result = WriteFileTool.run_code_lint(file_name).strip()
-
-                    print(f'Pylint: {result=}')
 
                     if result:
                         # Try to fix the unterminated string literal errors
