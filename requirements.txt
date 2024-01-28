@@ -5,6 +5,7 @@ pylint~=3.0.3
 requests~=2.31.0
 
 
-# beautifulsoup4
-# duckduckgo-search
-
+# Extra requirements to work with different problems/prompts
+# streamlit
+# pandas
+# matplotlib

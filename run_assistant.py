@@ -1,7 +1,7 @@
 from ai_assistant.assistant import Assistant
 from ai_assistant.tools.base import FinalAnswerTool
-from ai_assistant.tools.code_execution import CodeExecutionTool
 from ai_assistant.tools.file_system import WriteFileTool, MakeDirectoryTool
+from ai_assistant.tools.web_tools import DownloadFileTool
 
 
 def main():
@@ -11,7 +11,7 @@ def main():
     """
 
     assistant = Assistant(
-        tools=[CodeExecutionTool, WriteFileTool, FinalAnswerTool, MakeDirectoryTool, ],
+        tools=[WriteFileTool, DownloadFileTool, FinalAnswerTool, MakeDirectoryTool, ],
         verbose=False
     )
     assistant.run()

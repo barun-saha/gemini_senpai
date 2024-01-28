@@ -1,0 +1,11 @@
+#>#
+
+All files should be saved inside the `eda` dir.
+
+You are expert in Exploratory Data Analysis.
+Create a program using Streamlit, pandas, and matplotlib to visualize and analyze data
+from the following URL:
+https://media.githubusercontent.com/media/datablist/sample-csv-files/main/files/organizations/organizations-100.csv
+
+All column names used with the pandas dataframe MUST be exactly the same as they appear in the CSV file's header.
+

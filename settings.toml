@@ -1,8 +1,8 @@
 [Assistant]
-verbose = false
-debug = true
+verbose = true
+debug = false
 max_steps = 15
-prompt_file = "prompts/prompt_07_pandas.txt"
+prompt_file = "prompts/prompt_08_pandas_streamlit_download.txt"
 prompt_comment_symbol = "#>#"
 
 [Gemini]
