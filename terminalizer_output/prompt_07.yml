@@ -1,0 +1,148 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: null
+  
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: null
+  
+  # Export additional ENV variables
+  env:
+    recording: true
+  
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 120
+  
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 30
+  
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+  
+  # Quality
+  # 1 - 100
+  quality: 100
+  
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+  
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: 2000
+  
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: floating
+    title: null
+    style:
+      border: 0px black solid
+      # boxShadow: none
+      # margin: 0px
+  
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+  
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+  
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
+  
+  # The size of the font
+  fontSize: 12
+  
+  # The height of lines
+  lineHeight: 1
+  
+  # The spacing between letters
+  letterSpacing: 0
+  
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#afafaf"
+    cursor: "#c7c7c7"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#b3e33b"
+    yellow: "#ffa727"
+    blue: "#75dff2"
+    magenta: "#ae89fe"
+    cyan: "#708387"
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#c8ed71"
+    brightYellow: "#ebdf86"
+    brightBlue: "#75dff2"
+    brightMagenta: "#ae89fe"
+    brightCyan: "#b1c6ca"
+    brightWhite: "#f9f9f4"
+  
+# Records, feel free to edit them
+records:
+  - delay: 529
+    content: "\e[?25l\e[93m\e[6;41Hpython \e[m.\\run_assistant.py\e[?25h"
+  - delay: 853
+    content: "\r\n"
+  - delay: 1834
+    content: "Initializing AI Assistant...running now for max 15 steps\r\n"
+  - delay: 2361
+    content: "\e[?25l\e[32m\e[10;1H>>>>> Step 1 <<<<<\e[m\e[12;1HCreate a file named `students_subjects_marks.csv` and add sample data to it.\r\nThere are only three subjects: English, Science, and Maths. Sample data format is as follows:\r\nName,Subject,Marks\r\nJohn,English,50\r\nJane,Science,65\r\nJohn,Maths,72\r\nAlice,Maths,87\e[20;1HNext, write a Python program that uses pandas to read the CSV file.\r\nBased on the data, compute and display the average marks of each student.\r\nAlso, display the average marks of the students for each subject.\r\nSave all files in the `class_test` dir.\r\n\e[?25h"
+  - delay: 1976
+    content: "\e[?25l\e[32m*** Function call: func_name='WriteFileTool', params={'content': 'Name,Subject,Marks\\\\nJohn,English,50\\\\nJane,Science,65\\\\nJohn,Maths,72\\\\nAlice,Maths,87', 'file_name': 'class_test/students_subjects_marks.csv', 'file_write_mode': 'w'}\r\n*** Output of the function call: Successfully wrote to the file: class_test/students_subjects_marks.csv\e[29;1H>>>>> Step 2 <<<<<\e[m\r\nPreviously used tool: WriteFileTool\r\e[?25h\nOutput of the previous action: Successfully wrote to the file: class_test/students_subjects_marks.csv\r"
+  - delay: 13
+    content: |+
+
+  - delay: 2776
+    content: "\e[32m*** Function call: func_name='WriteFileTool', params={'content': \"import pandas as pd\\\\\\\\n\\\\\\\\ndef main():\\\\\\\\n    df = \e[m\r\n\e[32m\e[29;120H pd.read_csv('students_subjects_marks.csv')\\\\\\\\n    print('Average marks of each student:')\\\\\\\\n    print(df.groupby('Nam\e[m\r\n\e[32m\e[29;120Hme')['Marks'].mean())\\\\\\\\n    print('Average marks of the students for each subject:')\\\\\\\\n    print(df.groupby('Subject'\e[m\r\n\e[32m\e[29;120H')['Marks'].mean())\\\\\\\\n\\\\\\\\nif __name__ == '__main__':\\\\\\\\n    main()\", 'file_name': 'class_test/marks_analysis.py', 'fi\e[m\r\n\e[32m\e[29;120Hile_write_mode': 'w'}\r"
+  - delay: 7
+    content: "\e[m\n"
+  - delay: 1109
+    content: "Pylint result for class_test/marks_analysis.py: \r\n\e[32m*** Output of the function call: Successfully wrote to the file: class_test/marks_analysis.py\r\e[m\n\n\e[32m\e[m\n\e[32m>>>>> Step 3 <<<<<\r\e[m\nPreviously used tool: WriteFileTool\r\nOutput of the previous action: Successfully wrote to the file: class_test/marks_analysis.py\r"
+  - delay: 15
+    content: |+
+
+  - delay: 1178
+    content: "\e[32m*** Function call: func_name='CodeExecutionTool', params={'file_name': 'class_test/marks_analysis.py'}\r"
+  - delay: 16
+    content: "\e[m\n"
+  - delay: 345
+    content: "\e[32m*** Output of the function call: Average marks of each student:\r\e[m\n\e[32mName\r\e[m\n\e[32mAlice    87.0\r\e[m\n\e[32mJane     65.0\r\e[m\n\e[32mJohn     61.0\r\e[m\n\e[32mName: Marks, dtype: float64\r\e[m\n\e[32mAverage marks of the students for each subject:\r\e[m\n\e[32mSubject\r\e[m\n\e[32mEnglish    50.0\r\e[m\n\e[32mMaths      79.5\r\e[m\n\e[32mScience    65.0\r\e[m\n\e[32mName: Marks, dtype: float64\r\e[m\n\e[32m\e[m\n\n\e[32m\e[m\n\e[32m>>>>> Step 4 <<<<<\r\e[m\nPreviously used tool: CodeExecutionTool\r\nOutput of the previous action: Average marks of each student:\r\nName\r\nAlice    87.0\r\nJane     65.0\r\nJohn     61.0\r\nName: Marks, dtype: float64\r\nAverage marks of the students for each subject:\r\nSubject\r\nEnglish    50.0\r\nMaths      79.5\r\nScience    65.0\r\nName: Marks, dtype: float64\r\n"
+  - delay: 16
+    content: |+
+
+  - delay: 2237
+    content: "\e[32m*** Function call: func_name='FinalAnswerTool', params={'answer': 'Average marks of each student:\\\\\\\\nName\\\\\\\\nAlice    \e[m\r\n\e[32m\e[29;120H 87.0\\\\\\\\nJane     65.0\\\\\\\\nJohn     61.0\\\\\\\\nName: Marks, dtype: float64\\\\\\\\nAverage marks of the students for each subj\e[m\r\n\e[32m\e[29;120Hject:\\\\\\\\nSubject\\\\\\\\nEnglish    50.0\\\\\\\\nMaths      79.5\\\\\\\\nScience    65.0\\\\\\\\nName: Marks, dtype: float64'}\r\e[m\n\n\e[32mExiting the loop after 4 runs because the final answer was found:\r\e[m\n\e[32m\e[m\n\e[32mAverage marks of each student:\\\\nName\\\\nAlice    87.0\\\\nJane     65.0\\\\nJohn     61.0\\\\nName: Marks, dtype: float64\\\\nAv\e[m\r\n\e[32m\e[29;120Hverage marks of the students for each subject:\\\\nSubject\\\\nEnglish    50.0\\\\nMaths      79.5\\\\nScience    65.0\\\\nName: Ma\e[m\r\n\e[32m\e[29;120Harks, dtype: float64\r"
+  - delay: 18
+    content: "\e[m\n"

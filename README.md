@@ -2,6 +2,7 @@
 
 *Build your software with AI assistant, collaboratively*
 
+![](terminalizer_output/prompt_07.gif)
 
 
 ## Overview
