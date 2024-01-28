@@ -1,4 +1,4 @@
-#>#
+#># This task is prone to hallucination where synthetic data and non-existent column names are generated sometimes.
 
 All files should be saved inside the `eda` dir.
 
